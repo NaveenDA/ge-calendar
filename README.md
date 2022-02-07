@@ -3,9 +3,12 @@
 ### Design
 
 ### Todo
-[ ]- Calendar
-[ ]- Todo
-[ ]- Operations
-    [ ]- Save and retrive data effectivly
-    [ ]- Export Todo
-    [ ]- Remainder Executer
+- [x] Basic Project Structure 
+- [ ] Header and timezone switches
+- [ ] Calendar
+- [ ] Todo
+- [ ] Operations
+    - [ ] Save and retrive data effectivly
+    - [ ] Export Todo
+    - [ ] Remainder Executer
+    
