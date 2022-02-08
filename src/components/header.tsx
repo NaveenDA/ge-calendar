@@ -99,21 +99,7 @@ const Header: React.FC<HeaderProps> = (props) => {
     
   };
 
-  const getCurrentDate = () => {
-    return (
-      currentDate.getDate() +
-      "-" +
-      (currentDate.getMonth() + 1) +
-      "-" +
-      currentDate.getFullYear() +
-      " " +
-      currentDate.getHours() +
-      ":" +
-      currentDate.getMinutes()+
-      ":" +
-        currentDate.getSeconds()
-    );
-  };
+ 
   return (
     <Wrapper>
       <div className="month-switch">
@@ -130,7 +116,7 @@ const Header: React.FC<HeaderProps> = (props) => {
           {">"}
         </span>
       </div>
-      <div className="center-space">{getCurrentDate()}</div>
+      <div className="center-space">{currentDate.toLocaleString()}</div>
       <div className="timezone-switch">
         Timezone
         <select value={timezone} onChange={(e) => setTimeZone(e.target.value)}>

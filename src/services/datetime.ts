@@ -19,6 +19,11 @@ class DateTimeService {
         return date;
     }
 
+    // get formatted date
+    public static getFormattedDate(date: Date, timezone: string) {
+        let dateTime = date.toLocaleString("en-US", { timeZone: timezone });
+        return dateTime;
+    }
 
     // get current time for timezone
     public static getCurrentTime(date: string, time: string, timezone: string) {
@@ -56,6 +61,17 @@ class DateTimeService {
         today.toLocaleDateString("en-US", { timeZone: timezone });
         return date.getDate() === today.getDate() && date.getMonth() === today.getMonth() && date.getFullYear() === today.getFullYear();
     }
+
+    // date to timestamp
+    public static dateToTimestamp(date: Date) {
+        return date.getTime();
+    }
+
+    // number of dates  between two dates 
+    public static getNumberOfDaysBetweenDates(startDate: number, endDate: number) {
+        return Math.round((endDate - startDate) / (1000 * 60 * 60 * 24));
+    }
+
 
 }
 

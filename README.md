@@ -6,7 +6,7 @@ https://www.figma.com/file/UrpDXjTHYSlEJXIsnn94Yo/GE-Calender?node-id=0%3A1
 - [x] Basic Project Structure 
 - [x] Header and timezone switches
 - [x] Calendar
-- [ ] Todo
+- [x] Todo
 - [ ] Operations
     - [ ] Save and retrive data effectivly
     - [ ] Export Todo
