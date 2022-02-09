@@ -1,6 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 const plus = require("../assets/plus.png");
+const download = require("../assets/download.png");
+
 const Wrapper = styled.button`
   width: 50px;
   height: 50px;
@@ -12,9 +14,8 @@ const Wrapper = styled.button`
   right: 20px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
   cursor: pointer;
-  img{
-      width:100%;
-
+  img {
+    width: 100%;
   }
   &:hover {
     background: #e8e8e8;
@@ -24,9 +25,14 @@ const Wrapper = styled.button`
 `;
 
 const Fab: React.FC<any> = (props) => {
+  const images:any = {
+    plus,
+    download,
+  }
+  let img = images[props.type];
   return (
     <Wrapper {...props}>
-      <img src={plus} alt="plus" />
+      <img src={img} alt={props.type} />
     </Wrapper>
   );
 };

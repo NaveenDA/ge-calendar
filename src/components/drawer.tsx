@@ -1,10 +1,10 @@
 import React from "react";
 import styled from "styled-components";
+
 interface DrawerProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  footer: React.ReactNode;
   visible: boolean;
 }
 
@@ -40,7 +40,8 @@ const Wrapper = styled.div`
       line-height: 50px;
       text-align: right;
       padding: 0 5px;
-      width: 100%;
+      width: 95%;
+
       font-size: 20px;
       border-top: 1px solid #e8e8e8;
       position: absolute;
@@ -74,7 +75,7 @@ const Wrapper = styled.div`
 `;
 
 const Drawer: React.FC<DrawerProps> = (props) => {
-  const { title, footer, children, onClose, visible } = props;
+  const { title, children, onClose, visible } = props;
   return (
     <>
       <Wrapper>
@@ -84,7 +85,6 @@ const Drawer: React.FC<DrawerProps> = (props) => {
         >
           <div className="title">{title}</div>
           <div className="content">{children}</div>
-          <div className="footer">{footer}</div>
         </div>
       </Wrapper>
       {visible && <Backdrop onClick={() => onClose()} />}

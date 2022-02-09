@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { createGlobalStyle } from "styled-components";
 
+import Banner from "./components/banner";
+import Calendar from "./pages/calendar";
 import DateTimeService from "./services/datetime";
+import Header from "./components/header";
+import { createGlobalStyle } from "styled-components";
 import useInterval from "./hooks/useinterval";
 
-import Header from "./components/header";
-import Calendar from "./pages/calendar";
 const GlobalStyle = createGlobalStyle`
 /**
 Global CSS Variables
@@ -31,7 +32,7 @@ body{
 `;
 
 const App: React.FC = () => {
-  const [timezone, setTimeZone] = useState("Asia/Kolkata");
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
   const [monthDate, setMonthDate] = useState(
     DateTimeService.getDateforTimezone(new Date(), timezone)
   );
@@ -51,18 +52,15 @@ const App: React.FC = () => {
   return (
     <>
       <GlobalStyle />
+      <Banner />
       <Header
         timezone={timezone}
         monthDate={monthDate}
         setMonthDate={setMonthDate}
-        setTimeZone={setTimeZone}
         currentDate={currentDate}
         setCurrentDate={setCurrentDate}
       />
-      <Calendar
-        timezone={timezone}
-        monthDate={monthDate}
-      />
+      <Calendar timezone={timezone} monthDate={monthDate} />
     </>
   );
 };

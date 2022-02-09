@@ -1,6 +1,7 @@
-import React, { useEffect, useState, memo } from "react";
-import styled from "styled-components";
+import React, { memo, useEffect, useState } from "react";
+
 import DateTimeService from "../services/datetime";
+import styled from "styled-components";
 
 const Wrapper = styled.header`
   height: 55px;
@@ -9,6 +10,7 @@ const Wrapper = styled.header`
   flex-direction: row;
   line-height: 55px;
   border-bottom: 1px solid var(--gray);
+  overflow: hidden;
   .month-switch {
     justify-content: flex-start;
     flex-basis: 25%;
@@ -64,20 +66,24 @@ const Wrapper = styled.header`
     font-size: 12px;
     color: gray;
   }
+  .value {
+    font-size: 0.9rem;
+    color: gray;
+    padding-left: 12px;
+  }
 `;
 
 interface HeaderProps {
   timezone: string;
   monthDate: Date;
   setMonthDate: (date: Date) => void;
-  setTimeZone: (timezone: string) => void;
   currentDate: Date;
   setCurrentDate: (date: Date) => void;
 }
 
 const Header: React.FC<HeaderProps> = (props) => {
   const [monthText, setMonthText] = useState("");
-  const { monthDate, timezone, setMonthDate, setTimeZone, currentDate } = props;
+  const { monthDate, timezone, setMonthDate, currentDate } = props;
 
   useEffect(() => {
     // current month as string
@@ -86,20 +92,16 @@ const Header: React.FC<HeaderProps> = (props) => {
     setMonthText(currentMonth + " " + getCurrentYear);
   }, [monthDate, timezone]);
 
-
-
   const navigateMonth = (direction: string) => {
-    let date:any = monthDate;
+    let date: any = monthDate;
     if (direction === "next") {
-        date = date.setMonth(date.getMonth() + 1);
+      date = date.setMonth(date.getMonth() + 1);
     } else {
-        date = date.setMonth(date.getMonth() - 1);
+      date = date.setMonth(date.getMonth() - 1);
     }
     setMonthDate(new Date(date));
-    
   };
 
- 
   return (
     <Wrapper>
       <div className="month-switch">
@@ -119,11 +121,7 @@ const Header: React.FC<HeaderProps> = (props) => {
       <div className="center-space">{currentDate.toLocaleString()}</div>
       <div className="timezone-switch">
         Timezone
-        <select value={timezone} onChange={(e) => setTimeZone(e.target.value)}>
-          {DateTimeService.getTimezones().map((tz) => (
-            <option key={tz}>{tz}</option>
-          ))}
-        </select>
+        <span className="value">{timezone} </span>
       </div>
     </Wrapper>
   );

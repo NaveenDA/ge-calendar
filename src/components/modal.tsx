@@ -25,26 +25,32 @@ const Wrapper = styled.div`
     border-radius: 4px;
     z-index: 110;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    padding:12px;
+    padding: 12px;
     // animation zoomIn
     animation: zoomIn 0.3s ease-in-out;
     @keyframes zoomIn {
-        from {
-            opacity: 0;
-            transform: translate(-50%, -50%) scale(0);
-        }
-        to {
-            opacity: 1;
-            transform: translate(-50%, -50%) scale(1);
-        }
+      from {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
     }
-}
+  }
 `;
 const Modal: React.FC<ModalProps> = (props) => {
   return (
-    <Wrapper onClick={()=>props.onClose()}>
-      <div className="modal" onClick={(e)=>{
-         e.stopPropagation()}}>{props.children}</div>
+    <Wrapper onClick={() => props.onClose()}>
+      <div
+        className="modal"
+        onClick={(e) => {
+          e.stopPropagation();
+        }}
+      >
+        {props.children}
+      </div>
     </Wrapper>
   );
 };
