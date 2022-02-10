@@ -1,16 +1,21 @@
 
 export const createCSV = (data: any[], headers: string[]) => {
-    var array = typeof data != 'object' ? JSON.parse(data) : data;
-    var str = '';
+    let array = typeof data != 'object' ? JSON.parse(data) : data;
+    let str = '';
 
-    for (var i = 0; i < array.length; i++) {
-        var line = '';
-        for (var index in array[i]) {
+    for (let i = 0; i < array.length; i++) {
+        let line = '';
+        for (let index in array[i]) {
             if (line !== '') {
                 line += ','
             }
+            let value = array[i][index] || "";
+            // value contains comma, so we need to wrap it in quotes
+            if (value.includes(',')) {
+                value = '"' + value + '"';
+            }
 
-            line += array[i][index];
+            line += value;
         }
         str += line + '\r\n';
     }

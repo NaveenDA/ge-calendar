@@ -5,6 +5,7 @@ import CalendarModifier from "./calendar-modifier";
 import DBService from "../services/db";
 import DateTimeService from "../services/datetime";
 import Drawer from "../components/drawer";
+import Dropdown, { DropdownItem } from "../components/dropdown";
 import Fab from "../components/fab";
 import Modal from "../components/modal";
 import NotificationService from "../services/notification";
@@ -17,6 +18,7 @@ import { createCSV } from "../services/csv";
 const clock = require("../assets/clock.png");
 const location = require("../assets/location.png");
 const info = require("../assets/info.png");
+const dots = require("../assets/dots.png");
 
 interface CalendarProps {
   timezone: string;
@@ -99,6 +101,15 @@ const StyledModal = styled.div`
     font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
       Roboto, "Helvetica Neue", Arial, sans-serif;
   }
+  .options {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 12px;
+    width: 100%;
+    position: absolute;
+    right: 12px;
+    top: 5px;
+  }
 `;
 
 /**
@@ -113,6 +124,7 @@ const Calendar: FC<CalendarProps> = (props) => {
   const [DrawerVisible, setDrawerVisible] = useState(false);
   const [refreshToken, setrefreshToken] = useState(1);
   const [width, height] = useWindowSize();
+  const [Mode, setMode]: ["add" | "edit", Function] = useState("add");
 
   /**
    *  Process needs to be done on component mount
@@ -178,7 +190,7 @@ const Calendar: FC<CalendarProps> = (props) => {
   /**
    * Get Notifications for the current minute
    */
-  useInterval(() => {
+  useInterval(async () => {
     let notifications = DBService.get(NOTIFICATION_KEY);
     let _notifications: any = {};
 
@@ -204,12 +216,11 @@ const Calendar: FC<CalendarProps> = (props) => {
         }
         // older notifications are removed
       }
-      DBService.set(NOTIFICATION_KEY, _notifications);
+      await DBService.set(NOTIFICATION_KEY, _notifications);
     }
   }, 1000);
 
   const downloadCSV = () => {
-    debugger;
     let headers = [
       "Event",
       "Start Date",
@@ -257,6 +268,55 @@ const Calendar: FC<CalendarProps> = (props) => {
       }
     }
   };
+  /**
+   * Add Events
+   */
+  const addEvent = (event: any) => {
+    setModalVisible(false);
+    setDrawerVisible(true);
+    setMode("add");
+    const initalData = {
+      title: "",
+      start: "",
+      end: "",
+      location: "",
+      notification: "0",
+      description: ""
+    };
+    setSelectedDate(initalData);
+  };
+  /**
+   * Edit the event
+   */
+  const editEvent = () => {
+    setModalVisible(false);
+    setDrawerVisible(true);
+    setMode("edit");
+  };
+  /**
+   * Delete the event
+   */
+  const deleteEvent = async () => {
+    const event: any = SelectedDate;
+    if (window.confirm("Are you sure you want to delete this event?")) {
+      setModalVisible(false);
+      let events = DBService.get(EVENTS_KEY);
+      let _events: any = {};
+      if (events) {
+        for (let [key, value] of Object.entries(events)) {
+          let _value: any = value;
+          _value = _value.filter((_event: any) => {
+            return _event.id !== event.id;
+          });
+          _events[key] = _value;
+        }
+        await DBService.set(EVENTS_KEY, _events);
+        setAllEvents(_events);
+        setrefreshToken(refreshToken + 1);
+      }
+    }
+  };
+
   /**
    * Get the full calendar for the selected month
    */
@@ -383,6 +443,12 @@ const Calendar: FC<CalendarProps> = (props) => {
       {ModalVisible && (
         <Modal onClose={() => setModalVisible(false)}>
           <StyledModal>
+            <div className="options">
+              <Dropdown title={<img src={dots} alt="Options" />}>
+                <DropdownItem onClick={editEvent}>Edit</DropdownItem>
+                <DropdownItem onClick={deleteEvent}>Delete</DropdownItem>
+              </Dropdown>
+            </div>
             <h3>{SelectedDate.title}</h3>
             <hr />
             <p className="date">
@@ -412,18 +478,16 @@ const Calendar: FC<CalendarProps> = (props) => {
         style={{ bottom: 80 }}
         onClick={() => downloadCSV()}
       />
-      <Fab
-        type="plus"
-        title="Create Event"
-        onClick={() => setDrawerVisible(true)}
-      />
+      <Fab type="plus" title="Create Event" onClick={addEvent} />
 
       <Drawer
         onClose={() => setDrawerVisible(false)}
         visible={DrawerVisible}
-        title="Create an Event"
+        title={Mode === "add" ? "Create Event" : "Edit Event"}
       >
         <CalendarModifier
+          mode={Mode}
+          data={SelectedDate}
           onSubmit={() => {
             setrefreshToken(refreshToken + 1);
             setDrawerVisible(false);

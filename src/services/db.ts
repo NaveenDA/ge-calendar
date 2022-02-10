@@ -41,8 +41,12 @@ class DBService {
   //update
   public static update(key: string, value: any): Promise<any> {
     return new Promise((resolve, reject) => {
-      localStorage.setItem(key, JSON.stringify(value));
-      resolve(value);
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        resolve(true);
+      } catch (e) {
+        reject(e);
+      }
     });
   }
 }

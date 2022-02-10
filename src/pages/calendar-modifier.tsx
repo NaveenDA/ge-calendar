@@ -7,6 +7,8 @@ import styled from "styled-components";
 
 interface CalendarModifierProps {
   onSubmit: () => void;
+  mode: "add" | "edit";
+  data: any;
 }
 
 const Wrapper = styled.div`
@@ -40,18 +42,29 @@ const Wrapper = styled.div`
 const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
   const [ErrorMessages, setErrorMessages]: [string[], Function] = useState([]);
   const formRef: any = useRef(null);
+  const [formData, setformData] = useState({
+    title: "",
+    start: "",
+    end: "",
+    location: "",
+    notification: "0",
+    description: ""
+  });
 
   useEffect(() => {
-    formRef?.current?.reset();
-  }, [props]);
+    if (props.data.notification_time) {
+      props.data.notification = props.data.notification_time;
+    }
+    setformData(props.data);
+  }, [props, props.data]);
 
   const onSubmit = async (e: any) => {
     e.preventDefault();
 
     setErrorMessages([]);
     let errors = [];
-    var form = e.target;
-    var startDate = form.start.value;
+    let form = e.target;
+    let startDate = form.start.value;
     let start = new Date(startDate);
     // convert into iso
     let startISO = start.toISOString();
@@ -72,11 +85,14 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
 
     let uniqueId =
       Date.now().toString(36) + Math.random().toString(36).substring(2);
+    if (props.mode === "edit") {
+      uniqueId = props.data.id;
+    }
     let notification = parseInt(form.notification.value, 10);
     let notificationTime = new Date(start.getTime() - notification * 60000);
     let notificationISO = notificationTime.toISOString();
 
-    var data = {
+    let data = {
       id: uniqueId,
       title: form.title.value,
       start: startISO,
@@ -84,6 +100,7 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
       location: form.location.value,
       description: form.description.value,
       notification: notificationISO,
+      notification_time: notification + ""
     };
 
     // Save events to local storage
@@ -96,11 +113,13 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
       oldData[startDateString] = [];
     }
 
-    oldData[startDateString].push(data);
-    await DBService.set(EVENTS_KEY, oldData);
-
+    if (props.mode === "add") {
+      oldData[startDateString].push(data);
+      await DBService.set(EVENTS_KEY, oldData);
+    }
     // Save notification to local storage
 
+    let notificationData;
     if (notification) {
       let oldNotification = DBService.get(NOTIFICATION_KEY);
       if (!oldNotification) {
@@ -109,18 +128,92 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
       if (!oldNotification[notificationISO]) {
         oldNotification[notificationISO] = [];
       }
-      oldNotification[notificationISO].push({
+      let description = "Events starts in " + notification + " minutes";
+      if(notification=== 60){
+        description = "Events starts in 1 hour";
+      }
+       notificationData = {
         id: uniqueId,
         title: form.title.value,
-        descripton: "Events starts in " + notification + " minutes",
-      });
+        descripton: description
+      }
+      if (props.mode === "add") {
+        oldNotification[notificationISO].push(notificationData);
+        await DBService.set(NOTIFICATION_KEY, oldNotification);
+      }
+    }
+    if (props.mode === "edit") {
+      updateEvent(uniqueId, data, notificationData);
+    }
+    if(props.mode === "add"){
+    props.onSubmit();
+    }
+  };
 
-      await DBService.set(NOTIFICATION_KEY, oldNotification);
+  const updateEvent = async (id: string, data: any, notification: any) => {
+    let events = DBService.get(EVENTS_KEY);
+    let _events: any = {};
+    if (events) {
+      for (let [key, value] of Object.entries(events)) {
+        let _value: any = value;
+        _value = _value.map((_event: any) => {
+          if (_event.id === id) {
+            _event = data;
+          }
+          return _event;
+        });
+        _events[key] = _value;
+      }
+     
+     await DBService.update(EVENTS_KEY, _events);
     }
 
+    // edit notification
+    let oldNotification = DBService.get(NOTIFICATION_KEY);
+    if(!oldNotification){
+      oldNotification = {};
+    }
+    let _oldNotification: any = {};
+    let hasFindNotification = false;
+    if (oldNotification && notification) {
+      for (let [key, value] of Object.entries(oldNotification)) {
+        let _value: any = value;
+        // eslint-disable-next-line no-loop-func
+        _value = _value.map((_event: any) => {
+          if (_event.id === id) {
+            _event = notification;
+            hasFindNotification=true;
+          }
+          return _event;
+        });
+        _oldNotification[key] = _value;
+      }
+      if(!hasFindNotification){
+        let notificationISO = data.notification;
+        if (!_oldNotification[notificationISO]) {
+          _oldNotification[notificationISO] = [];
+        }
+        _oldNotification[notificationISO].push(notification);
+      }
+      await DBService.update(NOTIFICATION_KEY, _oldNotification);
+    }
     props.onSubmit();
   };
 
+  const onChange = (key: string, value: any) => {
+    let _formData: any = { ...formData };
+    _formData[key] = value;
+    setformData(_formData);
+  };
+
+  const setDate = (value: string) => {
+    let date = new Date(value);
+    date = new Date(
+      date.getTime() - new Date().getTimezoneOffset() * 60 * 1000
+    );
+    let isoString = date.toISOString();
+    return isoString.substring(0, ((isoString.indexOf("T") | 0) + 6) | 0);
+  };
   return (
     <Wrapper>
       {ErrorMessages.length > 0 && (
@@ -139,6 +232,9 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
           label="Title"
           type="text"
           id="title"
+          data-value={formData.title || ""}
+          value={formData.title || ""}
+          onChange={(e: any) => onChange("title", e.target.value)}
         />
         <Input
           required={true}
@@ -146,6 +242,9 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
           label="Start Date"
           type="datetime-local"
           id="start-date"
+          data-value={formData.start ? setDate(formData.start) : ""}
+          value={formData.start ? setDate(formData.start) : ""}
+          onChange={(e: any) => onChange("start", e.target.value)}
         />
         <Input
           required={true}
@@ -153,6 +252,9 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
           label="End Date"
           type="datetime-local"
           id="end-date"
+          data-value={formData.end ? setDate(formData.end) : ""}
+          value={formData.end ? setDate(formData.end) : ""}
+          onChange={(e: any) => onChange("end", e.target.value)}
         />
         <Input
           required={true}
@@ -160,12 +262,18 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
           label="Location"
           type="text"
           id="location"
+          data-value={formData.location}
+          value={formData.location || ""}
+          onChange={(e: any) => onChange("location", e.target.value)}
         />
         <Input
           label="Notify Before"
           id="notification"
           name="notification"
           type="select"
+          data-value={formData.notification}
+          value={formData.notification + "" || ""}
+          onChange={(e: any) => onChange("notification", e.target.value)}
         >
           <option value="0">No Notification</option>
           <option value="5">5 minutes</option>
@@ -179,6 +287,9 @@ const CalendarModifier: React.FC<CalendarModifierProps> = (props) => {
           name="description"
           type="textarea"
           id="description"
+          data-value={formData.description}
+          value={formData.description || ""}
+          onChange={(e: any) => onChange("description", e.target.value)}
         />
         <div className="footer">
           <button>Save</button>
