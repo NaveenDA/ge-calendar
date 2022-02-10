@@ -2,6 +2,8 @@
 
 ### Design
 https://www.figma.com/file/UrpDXjTHYSlEJXIsnn94Yo/GE-Calender?node-id=0%3A1
+### Demo
+https://620518cb6bb34f0059e3c786--ge-calendar.netlify.app/
 ### Todo
 - [x] Basic Project Structure 
 - [x] Header and timezone switches
